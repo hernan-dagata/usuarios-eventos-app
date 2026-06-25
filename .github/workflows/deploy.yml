@@ -56,9 +56,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Crear build
+        working-directory: frontend
         run: |
-          mkdir dist
-          cp -r index.html css js dist/
+          mkdir ../dist
+          cp -r index.html css js ../dist/
 
       - name: Subir artifact
         uses: actions/upload-pages-artifact@v3
