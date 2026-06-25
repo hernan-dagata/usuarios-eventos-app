@@ -12,13 +12,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Usuarios API", description="API con Supabase y RabbitMQ")
 
+
+@app.options("/{path:path}")
+def options_handler(path: str):
+    return {"message": "OPTIONS OK"}
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.on_event("startup")
 def startup_event():
