@@ -1,165 +1,201 @@
-# 🚀 Users API - FastAPI + Supabase + RabbitMQ
+# Backend - Usuarios Eventos App
 
-Microservicio de usuarios con arquitectura basada en eventos, construido con FastAPI, Supabase y RabbitMQ.
+Este README describe cómo configurar y ejecutar la parte del backend de la aplicación.
+El backend está construido con **FastAPI**, usa **Supabase** como base de datos y publica eventos en **RabbitMQ**.
 
----
+## 📌 Contenido
 
-## 🧠 Arquitectura
-
-Este servicio sigue un enfoque de Event-Driven Architecture:
-
-FastAPI → Supabase → RabbitMQ → consumidores de eventos
-
-Cada operación del CRUD genera un evento publicado en RabbitMQ.
-
----
-
-## 📦 Funcionalidades
-
-CRUD completo de usuarios:
-
-- Crear usuario
-- Consultar usuarios
-- Actualizar usuario
-- Eliminar usuario
+- Requisitos
+- Instalación
+- Configuración de variables de entorno
+- Ejecutar la API
+- Endpoints disponibles
+- Eventos de RabbitMQ
+- Probar la conexión a RabbitMQ
+- Notas adicionales
 
 ---
 
-## 📡 Eventos del sistema
+## 🧩 Requisitos
 
-Cada operación genera un evento con su respectivo tipo:
+Antes de ejecutar el backend necesitas:
 
-- user.events.app.created
-- user.events.app.retrieved
-- user.events.app.updated
-- user.events.app.deleted
+- Python 3.8+ instalado
+- RabbitMQ en ejecución
+- Cuenta y proyecto en Supabase
+- Las credenciales de Supabase
 
 ---
 
-## 📌 Ejemplo de evento
+## ⚙️ Instalación
 
-```json
-{
-  "id": "uuid",
-  "type": "user.events.app.created",
-  "version": "1.0",
-  "time_stamp": "2026-06-24T00:00:00-05:00",
-  "source": "users-api",
-  "correlation_id": "uuid",
-  "data": {
-    "id": 1,
-    "name": "Juan",
-    "email": "juan@test.com"
-  }
-}
+1. Abre una terminal en la carpeta `backend/`.
+2. Crea el entorno virtual:
+
+```bash
+python -m venv venv
 ```
 
----
+3. Activa el entorno virtual:
 
-## 🛠️ Tecnologías
+```bash
+# Windows
+venv\Scripts\activate
 
-- Python 3.10+
-- FastAPI
-- Supabase
-- RabbitMQ
-- Pika
-- python-dotenv
-
----
-
-## ⚙️ Configuración
-
-Crear archivo `.env` en la raíz del proyecto:
-
-```
-RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+# macOS / Linux
+source venv/bin/activate
 ```
 
----
-
-## ▶️ Ejecución local
-
-Instalar dependencias:
+4. Instala las dependencias:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Ejecutar el servidor:
+---
+
+## 🔐 Variables de Entorno
+
+El backend lee la configuración desde un archivo `.env` usando `python-dotenv`.
+Crea un archivo `.env` en `backend/` con estas variables:
+
+```env
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_KEY=tu-clave-secreta-supabase
+RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+```
+
+### Detalles importantes
+
+- `SUPABASE_URL`: URL de tu proyecto Supabase.
+- `SUPABASE_KEY`: clave API de Supabase.
+- `RABBITMQ_URL`: URL de conexión a RabbitMQ.
+  - Ejemplo local: `amqp://guest:guest@localhost:5672/`
+  - Ajusta usuario, contraseña, host, puerto y vhost según tu instalación.
+
+---
+
+## 🚀 Ejecutar la API
+
+Con el entorno virtual activado y el archivo `.env` configurado:
 
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 La API quedará disponible en:
 
-http://localhost:8000
+- http://localhost:8000
+- Documentación automática: http://localhost:8000/docs
 
 ---
 
-## 📬 Endpoints
+## 📡 Endpoints del Backend
 
-### Crear usuario
-POST /usuarios
+| Método | Ruta | Descripción |
+| ------ | ---- | ----------- |
+| `GET` | `/` | Verifica que el backend funcione |
+| `GET` | `/usuarios` | Lista todos los usuarios |
+| `POST` | `/usuarios` | Crea un usuario nuevo |
+| `PUT` | `/usuarios/{user_id}` | Actualiza un usuario existente |
+| `DELETE` | `/usuarios/{user_id}` | Elimina un usuario |
 
-### Consultar usuarios
-GET /usuarios
+### Ejemplo de solicitud POST
 
-### Actualizar usuario
-PUT /usuarios/{id}
-
-### Eliminar usuario
-DELETE /usuarios/{id}
-
----
-
-## 🐇 RabbitMQ
-
-### Configuración
-
-- Exchange: domainEvents
-- Tipo: topic
-- Queue: usuarios.events.queue
-
-### Routing keys
-
-- user.events.app.created
-- user.events.app.retrieved
-- user.events.app.updated
-- user.events.app.deleted
-
-Cada evento se publica usando su routing key correspondiente.
+```bash
+curl -X POST "http://localhost:8000/usuarios" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Ana", "email": "ana@example.com"}'
+```
 
 ---
 
-## 📊 Flujo del sistema
+## 🐇 Eventos RabbitMQ
 
-Request → FastAPI → Supabase → Evento → RabbitMQ
+El backend publica eventos de dominio cada vez que se realizan operaciones sobre usuarios.
+Los eventos se envían al exchange `domainEvents` con routing keys específicas.
 
----
+### Routing keys usados
 
-## 🧪 Casos de uso
+- `user.events.app.created`
+- `user.events.app.updated`
+- `user.events.app.deleted`
+- `user.events.app.retrieved`
 
-Este proyecto sirve para:
+### Archivos relevantes
 
-- Arquitectura basada en eventos
-- Microservicios
-- Pruebas automatizadas (QA / integración)
-- Trazabilidad de datos
-- Aprendizaje de mensajería con RabbitMQ
-
----
-
-## 🚀 Próximos pasos
-
-- Dockerizar el servicio
-- Agregar tests automatizados
-- Implementar patrón Outbox
-- Deploy en nube (Render / Railway / AWS)
-- Observabilidad de eventos
+- `messaging/rabbitmq.py` — configura la conexión y publica los mensajes
+- `messaging/events.py` — crea la estructura de los eventos JSON
 
 ---
 
-## 👨‍💻 Autor
+## 🧪 Probar RabbitMQ
 
-Hernan Garcia
+Puedes validar la conexión publicando un mensaje de prueba con `test_rabbit.py`.
+
+```bash
+python test_rabbit.py
+```
+
+Si la publicación es exitosa, deberías ver el mensaje:
+
+```text
+Evento enviado correctamente
+```
+
+---
+
+## 🗄️ Configuración de Supabase
+
+El backend espera una tabla llamada `usuarios` con al menos las columnas:
+
+- `id`
+- `name`
+- `email`
+- `created_at`
+
+Asegúrate de que tu tabla exista y tenga estos campos antes de ejecutar la API.
+
+---
+
+## 💡 Notas adicionales
+
+- La ruta CORS en `main.py` ya permite solicitudes desde:
+  - `http://127.0.0.1:5500`
+  - `http://localhost:5500`
+- Si sirves el frontend en otra dirección, añade esa URL a `allow_origins`.
+- El backend carga `dotenv` desde `database.py` y `rabbitmq.py`, así que el archivo `.env` debe estar en la carpeta `backend/`.
+
+---
+
+## 📁 Estructura del backend
+
+```
+backend/
+├── main.py
+├── models.py
+├── database.py
+├── requirements.txt
+├── .env
+├── test_rabbit.py
+└── messaging/
+    ├── events.py
+    └── rabbitmq.py
+```
+
+---
+
+## ✅ Resumen rápido
+
+1. `cd backend`
+2. `python -m venv venv`
+3. `venv\Scripts\activate` o `source venv/bin/activate`
+4. `pip install -r requirements.txt`
+5. Crear `.env` con Supabase y RabbitMQ
+6. `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+
+¡El backend estará listo para recibir peticiones y publicar eventos en RabbitMQ!
+
+## ℹ️ IMPORTANTE
+La url desplegada en este momento es:
+https://usuarios-eventos-app.onrender.com
