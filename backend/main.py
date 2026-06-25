@@ -8,9 +8,17 @@ from messaging.events import (
     crear_evento_usuario_eliminado,
 )
 from messaging.rabbitmq import configurar_rabbit, publicar_evento
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Usuarios API", description="API con Supabase y RabbitMQ")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup_event():
