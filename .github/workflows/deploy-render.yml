@@ -1,4 +1,4 @@
-name: Deploy to Render
+name: Deploy Backend
 
 on:
   push:
@@ -6,13 +6,13 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-backend:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Trigger Render deploy
+      - name: Trigger Render deploy (Backend)
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
